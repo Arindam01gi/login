@@ -1,0 +1,18 @@
+django
+django-cors-headers
+djangorestframework
+mysqlclient
+python-dateutil
+# boto3
+django-filter
+DateTime
+requests
+sqlparse
+# pandas
+# sqlalchemy
+# openpyxl
+# xlsxwriter
+PyJWT==1.7.1
+pysftp
+pytz
+drf-spectacular

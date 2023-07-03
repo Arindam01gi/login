@@ -1,0 +1,8 @@
+2023-07-03 18:50:13,287 user.views   INFO     Requested Data: {'name': 'arindam', 'email': 'maitiarindam04@gmail.com', 'phone': '8346945439', 'password': 1234}
+2023-07-03 18:50:13,287 user.views   INFO     hashmd5 -> 81dc9bdb52d04dc20036dbd8313ed055
+2023-07-03 18:50:13,302 user.views   INFO     Phone number format is valid
+2023-07-03 18:50:13,302 user.views   ERROR    Phone Already Exists
+Traceback (most recent call last):
+  File "D:\login\login\user\views.py", line 47, in Signup
+    raise Exception("Phone Already Exists")
+Exception: Phone Already Exists
