@@ -1,6 +1,6 @@
 __pycache__/
 *.pyc
 .vscode/
-*.log
+# *.log
 allmodels.py
-*.log.*
+# *.log.*

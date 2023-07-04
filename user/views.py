@@ -4,10 +4,12 @@ from rest_framework.response import Response
 from user.models import User
 from django.db import transaction
 from datetime import datetime
+from user.serializers import UserSerializer
 from errors import MandatoryInputMissingException,PasswordLengthError
 from constant import SE001,SE001MESSAGE,IN001,IN001MESSAGE,IN002,IN002MESSAGE
 
 import logging,hashlib,re
+
 
 logger = logging.getLogger(__name__)
 
@@ -55,7 +57,7 @@ def Signup(request):
                     raise Exception("Email already exists")
                 
         with transaction.atomic():
-            user_data = {'name':name,'email':email,'phone':phone,'password':password,'created_on':datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S'),'updated_on':datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')}
+            user_data = {'name':name,'email':email,'phone':phone,'password':hashmd5,'created_on':datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S'),'updated_on':datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')}
             User.objects.create(**user_data)
             logger.info("User Creataed Successfully!")
 
@@ -99,17 +101,49 @@ def SignIn(request):
     try:
         data = request.data
         logger.info(f"Requested Data: {data}")
+        serializer = UserSerializer(data=data)
+        user_id = data['user_id'] 
         phone = data['phone'] if data.get('phone') else None
         email = data['email'] if data.get('email') else None
         password = data['password'] 
 
-        if phone in (None ,'') and email in('None',''):
-            raise MandatoryInputMissingException('Phone/Email Missing')
+
+        if phone in (None ,'') or email in('None','') or user_id in (None,''):
+            raise MandatoryInputMissingException('User Id/Phone/Email Missing')
         
         if password in (None,''):
             raise MandatoryInputMissingException('Password is Missing')
         
+        user_exists = User.objects.filter(user_id=user_id,phone=phone).exists()
+        if user_exists:
+            get_password = User.objects.only('password').get(user_id=user_id).password
+            logger.info(f"password:{get_password}")
+            given_pasword = hashlib.md5(str(password).encode()).hexdigest()
+            logger.info(f"given password:{given_pasword}")
+
+            if given_pasword != get_password:
+                raise Exception("Password Not Matched")
+            else:
+                if serializer.is_valid():
+                    logger.info(f"Password Matched.Process after there......")
+                    desrialized_user_data = serializer.validated_data()
+                    logger.info(f"desrialized_user_data ->{desrialized_user_data}")
+                else:
+                    errors= serializer.errors
+                    logger.warning(f'Error:{errors}')
+
+                
+
+        return Response("Ok")
         
+    except MandatoryInputMissingException as mime:
+        logger.exception(mime)
+        ec.append(IN001)
+        ec.append(IN001MESSAGE)
+        ek.append(CODE)
+        ek.append(MESSAGE)
+        errordisplay[0].append(dict(zip(ek,ec)))
+        return Response({ERROR:(dict(zip(errorkeys,errordisplay)))})    
 
     except Exception as e:
         logger.exception(e)
